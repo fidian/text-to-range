@@ -56,7 +56,7 @@ import test from 'ava';
     // Equations
     { input: '>10', interval: '(10,Infinity]' },
     { input: '<=10', interval: '[-Infinity,10]' },
-    { input: '<5 >=2', interval: '[2,5)' },
+    { input: '<51 >=27', interval: '[27,51)' },
     { input: '<5 >5', interval: null, name: 'conflicting operations' },
     { input: '=2', interval: '2' },
     { input: '==22', interval: '22' },

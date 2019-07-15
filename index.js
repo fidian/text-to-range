@@ -34,6 +34,8 @@ function addPattern(name, pattern) {
 }
 
 function setMinimum(range, number, inclusive) {
+    number = +number;
+
     if (range.min < number) {
         range.min = number;
         range.minInclusive = inclusive;
@@ -43,6 +45,8 @@ function setMinimum(range, number, inclusive) {
 }
 
 function setMaximum(range, number, inclusive) {
+    number = +number;
+
     if (range.max > number) {
         range.max = number;
         range.maxInclusive = inclusive;
