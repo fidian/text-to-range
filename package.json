@@ -1,0 +1,31 @@
+{
+    "name": "text-to-range",
+    "version": "1.0.0",
+    "description": "Convert a user's range specification into numbers.",
+    "main": "index.js",
+    "scripts": {
+        "test": "ava && eslint ."
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/fidian/text-to-range.git"
+    },
+    "keywords": [
+        "range",
+        "text",
+        "parse",
+        "range",
+        "interval",
+        "numeric"
+    ],
+    "author": "Tyler Akins <fidian@rumkin.com>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/fidian/text-to-range/issues"
+    },
+    "homepage": "https://github.com/fidian/text-to-range#readme",
+    "devDependencies": {
+        "ava": "^2.2.0",
+        "eslint": "^6.0.1"
+    }
+}
