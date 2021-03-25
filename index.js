@@ -77,6 +77,21 @@ function rangeIsValid(range) {
     );
 }
 
+function makeRangeSimple(minInclusive, min, max, maxInclusive) {
+    const range = {
+        minInclusive: minInclusive,
+        min: min,
+        max: max,
+        maxInclusive: maxInclusive
+    };
+
+    if (!rangeIsValid(range)) {
+        return null;
+    }
+
+    return range;
+}
+
 function makeRange(minInclusive, min, max, maxInclusive) {
     if (patterns.infinityAnchored.test(min)) {
         min = Number.NEGATIVE_INFINITY;
@@ -102,12 +117,34 @@ function makeRange(minInclusive, min, max, maxInclusive) {
         maxInclusive = temp;
     }
 
-    return {
-        minInclusive: minInclusive,
-        min: min,
-        max: max,
-        maxInclusive: maxInclusive
-    };
+    return makeRangeSimple(minInclusive, min, max, maxInclusive);
+}
+
+function combineRanges(a, b) {
+    if (a === null || b === null || a.or || b.or) {
+        return null;
+    }
+
+    let min = a.min;
+    let minInclusive = a.minInclusive;
+    let max = a.max;
+    let maxInclusive = a.maxInclusive;
+
+    if (min === b.min) {
+        minInclusive = minInclusive && b.minInclusive;
+    } else if (b.min > min) {
+        min = b.min;
+        minInclusive = b.minInclusive;
+    }
+
+    if (max === b.max) {
+        maxInclusive = maxInclusive && b.maxInclusive;
+    } else if (b.max < max) {
+        max = b.max;
+        maxInclusive = b.maxInclusive;
+    }
+
+    return makeRangeSimple(minInclusive, min, max, maxInclusive);
 }
 
 function or(list) {
@@ -125,7 +162,7 @@ function textToRange(input) {
         return null;
     }
 
-    input = input.trim();
+    input = input.replace(/  +/g, ' ').trim();
 
     for (const i of allowedFormats) {
         const matches = input.match(i.regExp);
@@ -151,8 +188,10 @@ addPattern('infinity', '(?:\\*|\\$|(?:-{{ws}})?inf(?:inity)?)');
 addPattern('infinityAnchored', '^{{infinity}}$');
 
 addPattern('range', '{{ws}}(?:to|:|-|\\.\\.+|~){{ws}}');
-addPattern('combine', '(?:,|&&|&|\\+|;|or|and|\\|\\||\\|)');
-addPattern('combineOrWs', '(?:{{ws}}{{combine}}{{ws}}|{{space}}+)');
+addPattern('combineAnd', '(?:&&|&|\\+|and)');
+addPattern('combineAndWs', '(?:{{ws}}{{combineAnd}}{{ws}})');
+addPattern('combineOr', '(?:,|;|or|\\|\\||\\|)');
+addPattern('combineOrWs', '(?:{{ws}}{{combineOr}}{{ws}}|{{space}}+)');
 addPattern('rangeEnd', '(?:x{{ws}})?(?:{{number}}|{{infinity}})');
 addPattern('numberRange', '{{rangeEnd}}{{range}}{{rangeEnd}}');
 addPattern('matchNumberRange', '({{rangeEnd}}){{range}}({{rangeEnd}})');
@@ -185,9 +224,10 @@ addPattern(
 );
 
 addPattern('anything', '(?:{{number}}|{{numberRange}}|{{equation}}|{{equationRange}}|{{interval}})');
+addPattern('anythingList', '{{anything}}(?:{{combineAndWs}}{{anything}})*');
 addPattern(
     'matchAnythingCombined',
-    '({{anything}})((?:{{combineOrWs}}{{anything}})*)'
+    '({{anythingList}})((?:{{combineOrWs}}{{anythingList}})*)'
 );
 
 const allowedFormats = [
@@ -216,6 +256,15 @@ const allowedFormats = [
             }
 
             return or([first, rest]);
+        }
+    },
+    {
+        pattern: '({{anything}}){{combineAndWs}}({{anythingList}})',
+        handler: m => {
+            const first = textToRange(m[1]);
+            const rest = textToRange(m[2]);
+
+            return combineRanges(first, rest);
         }
     },
     {

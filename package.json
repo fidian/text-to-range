@@ -1,6 +1,6 @@
 {
     "name": "text-to-range",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Convert a user's range specification into numbers.",
     "main": "index.js",
     "scripts": {
@@ -25,7 +25,7 @@
     },
     "homepage": "https://github.com/fidian/text-to-range#readme",
     "devDependencies": {
-        "ava": "^2.2.0",
-        "eslint": "^6.0.1"
+        "ava": "^3.15.0",
+        "eslint": "^7.22.0"
     }
 }

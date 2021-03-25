@@ -1,5 +1,5 @@
-import { rangeToEquation, rangeToInterval, textToRange } from '..';
-import test from 'ava';
+const { rangeToEquation, rangeToInterval, textToRange } = require('..');
+const test = require('ava');
 
 [
     // Invalid input
@@ -10,6 +10,12 @@ import test from 'ava';
         interval: null,
         equation: null,
         name: 'unparsable string'
+    },
+    {
+        input: '< 17 & > 18',
+        interval: null,
+        equation: null,
+        name: 'invalid range with AND'
     },
 
     // Numeric
@@ -29,12 +35,13 @@ import test from 'ava';
     { input: '2 3', interval: '2, 3', equation: '2, 3' },
     { input: ' 12, 4', interval: '12, 4' },
     { input: '4 ; 5 ', interval: '4, 5' },
-    { input: '5+6', interval: '5, 6' },
-    { input: '6 & 7 ', interval: '6, 7' },
+    { input: '5+6', interval: null, name: 'conflicting range +' },
+    { input: '5,6', interval: '5, 6' },
+    { input: '6 & 7 ', interval: null, name: 'conflicting range &' },
+    { input: '6 | 7 ', interval: '6, 7' },
     { input: '1, 2, 3', interval: '1, 2, 3' },
-    { input: '1 or 2 and 3', interval: '1, 2, 3' },
+    { input: '1 or 2 ; 3', interval: '1, 2, 3' },
     { input: '1 | 2 || 3', interval: '1, 2, 3' },
-    { input: '1 & 2 && 3', interval: '1, 2, 3' },
 
     // Ranges
     { input: '9 to 13', interval: '[9,13]', equation: '>=9 <=13' },
@@ -51,7 +58,7 @@ import test from 'ava';
     // List of ranges
     { input: '1, 2', interval: '1, 2' },
     { input: '1-2 , 3..4', interval: '[1,2], [3,4]' },
-    { input: '1:2+3to4', interval: '[1,2], [3,4]' },
+    { input: '1:2;3to4', interval: '[1,2], [3,4]' },
 
     // Equations
     { input: '>10', interval: '(10,Infinity]' },
@@ -75,7 +82,14 @@ import test from 'ava';
     // Functionality
     { input: '9 to 5', interval: '[5,9]', name: 'reversed min/max' },
     { input: '1, 6-7', interval: '1, [6,7]', name: 'mixed formats' },
-    { input: '[3,4],[5,6] 7-8', interval: '[3,4], [5,6], [7,8]' }
+    { input: '[3,4],[5,6] 7-8', interval: '[3,4], [5,6], [7,8]' },
+    {
+        input: '>3 or <6',
+        interval: '(3,Infinity], [-Infinity,6)',
+        name: 'using OR'
+    },
+    { input: '>3 and <6', interval: '(3,6)', name: 'using AND' },
+    { input: '>=1   <=3', interval: '[1,3]', name: 'multiple spaces' }
 ].forEach(scenario => {
     test(scenario.name || `parses: ${JSON.stringify(scenario.input)}`, t => {
         const range = textToRange(scenario.input);
